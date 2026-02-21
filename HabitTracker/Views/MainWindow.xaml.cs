@@ -1,6 +1,5 @@
 ﻿using System.Windows;
 using HabitTracker.Models;
-using HabitTracker.Services;
 using HabitTracker.Views;
 
 namespace HabitTracker
@@ -10,44 +9,18 @@ namespace HabitTracker
         public MainWindow()
         {
             InitializeComponent();
-            RefreshList();
         }
 
-        private void RefreshList()
+        private void BadHabits_Click(object sender, RoutedEventArgs e)
         {
-            HabitList.ItemsSource = DatabaseService.GetHabits();
+            var window = new HabitListWindow(HabitType.Bad);
+            window.ShowDialog();
         }
 
-        private void Add_Click(object sender, RoutedEventArgs e)
+        private void GoodHabits_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new AddHabitWindow { Owner = this };
-            if (dialog.ShowDialog() == true)
-            {
-                DatabaseService.AddHabit(dialog.HabitName);
-                RefreshList();
-            }
-        }
-
-        private void Delete_Click(object sender, RoutedEventArgs e)
-        {
-            if (HabitList.SelectedItem is Habit selected)
-            {
-                DatabaseService.DeleteHabit(selected.Id);
-                RefreshList();
-            }
-        }
-
-        private void HabitList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            if (HabitList.SelectedItem is Habit selected)
-            {
-                StatusText.Text = $"{selected.Name}\nUtoljára: {selected.LastOccurrence}";
-            }
-        }
-
-        private void Reset_Click(object sender, RoutedEventArgs e)
-        {
-            
+            var window = new HabitListWindow(HabitType.Good);
+            window.ShowDialog();
         }
     }
 }

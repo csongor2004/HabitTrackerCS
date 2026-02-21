@@ -19,7 +19,8 @@ namespace HabitTracker.Services
                     CREATE TABLE IF NOT EXISTS Habits (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Name TEXT,
-                        LastOccurrence DATETIME
+                        LastOccurrence DATETIME,
+                        Type INTEGER
                     );
                     CREATE TABLE IF NOT EXISTS Logs (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,27 +33,29 @@ namespace HabitTracker.Services
             }
         }
 
-        public static void AddHabit(string name)
+        public static void AddHabit(string name, HabitType type)
         {
             using (var connection = new SqliteConnection(DbPath))
             {
                 connection.Open();
                 var command = connection.CreateCommand();
-                command.CommandText = "INSERT INTO Habits (Name, LastOccurrence) VALUES ($name, $now)";
+                command.CommandText = "INSERT INTO Habits (Name, LastOccurrence, Type) VALUES ($name, $now, $type)";
                 command.Parameters.AddWithValue("$name", name);
                 command.Parameters.AddWithValue("$now", DateTime.Now);
+                command.Parameters.AddWithValue("$type", (int)type);
                 command.ExecuteNonQuery();
             }
         }
 
-        public static List<Habit> GetHabits()
+        public static List<Habit> GetHabits(HabitType type)
         {
             var habits = new List<Habit>();
             using (var connection = new SqliteConnection(DbPath))
             {
                 connection.Open();
                 var command = connection.CreateCommand();
-                command.CommandText = "SELECT * FROM Habits";
+                command.CommandText = "SELECT Id, Name, LastOccurrence, Type FROM Habits WHERE Type = $type";
+                command.Parameters.AddWithValue("$type", (int)type);
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -61,12 +64,26 @@ namespace HabitTracker.Services
                         {
                             Id = reader.GetInt32(0),
                             Name = reader.GetString(1),
-                            LastOccurrence = reader.GetDateTime(2)
+                            LastOccurrence = reader.GetDateTime(2),
+                            Type = (HabitType)reader.GetInt32(3)
                         });
                     }
                 }
             }
             return habits;
+        }
+
+        public static void ResetHabit(int id)
+        {
+            using (var connection = new SqliteConnection(DbPath))
+            {
+                connection.Open();
+                var command = connection.CreateCommand();
+                command.CommandText = "UPDATE Habits SET LastOccurrence = $now WHERE Id = $id";
+                command.Parameters.AddWithValue("$now", DateTime.Now);
+                command.Parameters.AddWithValue("$id", id);
+                command.ExecuteNonQuery();
+            }
         }
 
         public static void DeleteHabit(int id)
