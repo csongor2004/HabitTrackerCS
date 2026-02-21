@@ -12,6 +12,7 @@
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Content="+" Click="Add_Click" Width="40" Margin="5"/>
                 <Button Content="-" Click="Delete_Click" Width="40" Margin="5"/>
+                <Button Content="Szerkesztés" Click="EditHabit_Click" Width="80" Margin="5"/>
             </StackPanel>
             <ListBox x:Name="HabitList" DisplayMemberPath="Name" SelectionChanged="HabitList_SelectionChanged"/>
         </DockPanel>

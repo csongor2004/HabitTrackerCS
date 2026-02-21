@@ -85,7 +85,59 @@ namespace HabitTracker.Services
                 command.ExecuteNonQuery();
             }
         }
+        public static void UpdateHabit(int id, string newName, HabitType newType)
+        {
+            using (var connection = new SqliteConnection(DbPath))
+            {
+                connection.Open();
+                var command = connection.CreateCommand();
+                command.CommandText = "UPDATE Habits SET Name = $name, Type = $type WHERE Id = $id";
+                command.Parameters.AddWithValue("$name", newName);
+                command.Parameters.AddWithValue("$type", (int)newType);
+                command.Parameters.AddWithValue("$id", id);
+                command.ExecuteNonQuery();
+            }
+        }
 
+
+        public static List<HabitLog> GetLogsForHabit(int habitId)
+        {
+            var logs = new List<HabitLog>();
+            using (var connection = new SqliteConnection(DbPath))
+            {
+                connection.Open();
+                var command = connection.CreateCommand();
+                command.CommandText = "SELECT Id, HabitId, Note, Timestamp FROM Logs WHERE HabitId = $habitId ORDER BY Timestamp DESC";
+                command.Parameters.AddWithValue("$habitId", habitId);
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        logs.Add(new HabitLog
+                        {
+                            Id = reader.GetInt32(0),
+                            HabitId = reader.GetInt32(1),
+                            Note = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                            Timestamp = reader.GetDateTime(3)
+                        });
+                    }
+                }
+            }
+            return logs;
+        }
+
+        // Konkrét esemény törlése
+        public static void DeleteLog(int logId)
+        {
+            using (var connection = new SqliteConnection(DbPath))
+            {
+                connection.Open();
+                var command = connection.CreateCommand();
+                command.CommandText = "DELETE FROM Logs WHERE Id = $id";
+                command.Parameters.AddWithValue("$id", logId);
+                command.ExecuteNonQuery();
+            }
+        }
         public static void DeleteHabit(int id)
         {
             using (var connection = new SqliteConnection(DbPath))
@@ -97,5 +149,43 @@ namespace HabitTracker.Services
                 command.ExecuteNonQuery();
             }
         }
+        public static void RecordEvent(int habitId, string note = "")
+        {
+            using (var connection = new SqliteConnection(DbPath))
+            {
+                connection.Open();
+                var transaction = connection.BeginTransaction();
+                try
+                {
+                    var time = DateTime.Now;
+
+                    var updateCmd = connection.CreateCommand();
+                    updateCmd.CommandText = "UPDATE Habits SET LastOccurrence = $now WHERE Id = $id";
+                    updateCmd.Parameters.AddWithValue("$now", time);
+                    updateCmd.Parameters.AddWithValue("$id", habitId);
+                    updateCmd.ExecuteNonQuery();
+
+                    var insertCmd = connection.CreateCommand();
+                    insertCmd.CommandText = "INSERT INTO Logs (HabitId, Note, Timestamp) VALUES ($habitId, $note, $now)";
+                    insertCmd.Parameters.AddWithValue("$habitId", habitId);
+                    insertCmd.Parameters.AddWithValue("$note", note);
+                    insertCmd.Parameters.AddWithValue("$now", time);
+                    insertCmd.ExecuteNonQuery();
+
+                    transaction.Commit();
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+            }
+        }
+
+        
+
+        
+
+        
     }
 }

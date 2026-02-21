@@ -58,12 +58,22 @@ namespace HabitTracker.Views
                 var result = MessageBox.Show("Biztosan rögzíted az eseményt?", "Megerősítés", MessageBoxButton.YesNo);
                 if (result == MessageBoxResult.Yes)
                 {
-                    DatabaseService.ResetHabit(selected.Id);
+                    DatabaseService.RecordEvent(selected.Id, "Gyors rögzítés");
                     RefreshList();
                 }
             }
         }
-
+        private void EditHabit_Click(object sender, RoutedEventArgs e)
+        {
+            if (HabitList.SelectedItem is Habit selected)
+            {
+                var detailsWindow = new HabitDetailsWindow(selected) { Owner = this };
+                if (detailsWindow.ShowDialog() == true)
+                {
+                    RefreshList();
+                }
+            }
+        }
         private void RefreshList()
         {
             HabitList.ItemsSource = DatabaseService.GetHabits(_currentType);
