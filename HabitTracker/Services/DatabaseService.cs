@@ -108,7 +108,7 @@ namespace HabitTracker.Services
             {
                 connection.Open();
                 var command = connection.CreateCommand();
-                command.CommandText = "SELECT Id, HabitId, Note, Timestamp FROM Logs WHERE HabitId = $habitId ORDER BY Timestamp DESC";
+                command.CommandText = "SELECT Id, HabitId, Note, Timestamp, IsCheatDay FROM Logs WHERE HabitId = $habitId ORDER BY Timestamp DESC";
                 command.Parameters.AddWithValue("$habitId", habitId);
                 using (var reader = command.ExecuteReader())
                 {
@@ -119,6 +119,7 @@ namespace HabitTracker.Services
                             Id = reader.GetInt32(0),
                             HabitId = reader.GetInt32(1),
                             Note = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                            IsCheatDay = reader.GetInt32(4) == 1,
                             Timestamp = reader.GetDateTime(3)
                         });
                     }
@@ -127,16 +128,46 @@ namespace HabitTracker.Services
             return logs;
         }
 
-        // Konkrét esemény törlése
-        public static void DeleteLog(int logId)
+
+        public static void DeleteLog(int logId, int habitId)
         {
             using (var connection = new SqliteConnection(DbPath))
             {
                 connection.Open();
-                var command = connection.CreateCommand();
-                command.CommandText = "DELETE FROM Logs WHERE Id = $id";
-                command.Parameters.AddWithValue("$id", logId);
-                command.ExecuteNonQuery();
+                var transaction = connection.BeginTransaction();
+                try
+                {
+                    // 1. Töröljük a kiválasztott bejegyzést a naplóból
+                    var deleteCmd = connection.CreateCommand();
+                    deleteCmd.CommandText = "DELETE FROM Logs WHERE Id = $id";
+                    deleteCmd.Parameters.AddWithValue("$id", logId);
+                    deleteCmd.ExecuteNonQuery();
+
+                    // 2. Megkeressük a listában maradt legutóbbi (nem Cheat Day) esemény időpontját
+                    var getLastCmd = connection.CreateCommand();
+                    getLastCmd.CommandText = "SELECT Timestamp FROM Logs WHERE HabitId = $habitId AND IsCheatDay = 0 ORDER BY Timestamp DESC LIMIT 1";
+                    getLastCmd.Parameters.AddWithValue("$habitId", habitId);
+
+                    var result = getLastCmd.ExecuteScalar();
+
+                    // 3. Ha van előző esemény, arra állítjuk vissza a fő számlálót
+                    if (result != null && result != DBNull.Value)
+                    {
+                        DateTime previousTimestamp = Convert.ToDateTime(result);
+                        var updateCmd = connection.CreateCommand();
+                        updateCmd.CommandText = "UPDATE Habits SET LastOccurrence = $time WHERE Id = $habitId";
+                        updateCmd.Parameters.AddWithValue("$time", previousTimestamp);
+                        updateCmd.Parameters.AddWithValue("$habitId", habitId);
+                        updateCmd.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    throw;
+                }
             }
         }
         public static void DeleteHabit(int id)

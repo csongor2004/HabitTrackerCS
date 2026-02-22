@@ -1,6 +1,7 @@
 ﻿using HabitTracker.Models;
 using HabitTracker.Services;
 using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -22,7 +23,17 @@ namespace HabitTracker.Views
             this.Loaded += (s, e) => RefreshList();
             StartTimer();
         }
-
+        private void OpenAnalysis_Click(object sender, RoutedEventArgs e)
+        {
+            if (HabitList.SelectedItem is Habit selected)
+            {
+                NavigationService.Navigate(new HabitAnalysisPage(selected));
+            }
+            else
+            {
+                MessageBox.Show("Előbb válassz ki egy szokást a listából!");
+            }
+        }
         private void Back_Click(object sender, RoutedEventArgs e)
         {
             NavigationService.GoBack();
@@ -43,14 +54,17 @@ namespace HabitTracker.Views
         {
             if (HabitList.SelectedItem is Habit selected)
             {
+                RightPanel.Visibility = Visibility.Visible;
+                NoSelectionText.Visibility = Visibility.Collapsed;
+
+                SelectedHabitNameText.Text = selected.Name;
                 TimeSpan diff = DateTime.Now - selected.LastOccurrence;
-                StatusText.Text = $"{selected.Name}\n\n" +
-                                 $"{diff.Days} nap, {diff.Hours} óra\n" +
-                                 $"{diff.Minutes} perc, {diff.Seconds} mp";
+                StatusText.Text = $"{diff.Days} nap, {diff.Hours} óra\n{diff.Minutes} perc, {diff.Seconds} mp";
             }
             else
             {
-                StatusText.Text = "Válassz szokást a listából!";
+                RightPanel.Visibility = Visibility.Hidden;
+                NoSelectionText.Visibility = Visibility.Visible;
             }
         }
 
@@ -58,12 +72,13 @@ namespace HabitTracker.Views
         {
             if (HabitList.SelectedItem is Habit selected)
             {
-                var result = MessageBox.Show("Biztosan rögzíted az eseményt?", "Megerősítés", MessageBoxButton.YesNo);
-                if (result == MessageBoxResult.Yes)
-                {
-                    DatabaseService.RecordEvent(selected.Id, "Gyors rögzítés");
-                    RefreshList();
-                }
+                string note = string.IsNullOrWhiteSpace(QuickNoteTextBox.Text) ? "Gyors rögzítés" : QuickNoteTextBox.Text;
+
+                
+                DatabaseService.RecordEvent(selected.Id, note, false);
+
+                QuickNoteTextBox.Clear();
+                RefreshList();
             }
         }
 
@@ -73,11 +88,26 @@ namespace HabitTracker.Views
             {
                 NavigationService.Navigate(new HabitDetailsPage(selected));
             }
+            else
+            {
+                MessageBox.Show("Előbb válassz ki egy szokást a listából!");
+            }
         }
 
         private void RefreshList()
         {
-            HabitList.ItemsSource = DatabaseService.GetHabits(_currentType);
+            
+            int? selectedId = (HabitList.SelectedItem as Habit)?.Id;
+
+            var habits = DatabaseService.GetHabits(_currentType);
+            HabitList.ItemsSource = habits;
+
+            
+            if (selectedId.HasValue)
+            {
+                HabitList.SelectedItem = habits.FirstOrDefault(h => h.Id == selectedId.Value);
+            }
+
             UpdateStatusText();
         }
 
@@ -95,8 +125,12 @@ namespace HabitTracker.Views
         {
             if (HabitList.SelectedItem is Habit selected)
             {
-                DatabaseService.DeleteHabit(selected.Id);
-                RefreshList();
+                var result = MessageBox.Show($"Biztosan törlöd a(z) '{selected.Name}' szokást?", "Törlés", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (result == MessageBoxResult.Yes)
+                {
+                    DatabaseService.DeleteHabit(selected.Id);
+                    RefreshList();
+                }
             }
         }
     }

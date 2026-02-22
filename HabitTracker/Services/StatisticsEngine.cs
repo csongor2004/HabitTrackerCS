@@ -5,12 +5,23 @@ using HabitTracker.Models;
 
 namespace HabitTracker.Services
 {
+
+    public class IntervalData
+    {
+        public double Hours { get; set; }
+        public string EndDate { get; set; }
+    }
     public class HabitStats
     {
+        public TimeSpan CurrentStreak { get; set; }
         public TimeSpan LongestStreak { get; set; }
         public TimeSpan AverageStreak { get; set; }
+        public int TotalEvents { get; set; }
+        public int CheatDays { get; set; }
         public DateTime? PredictedNextEvent { get; set; }
         public string AiSuggestion { get; set; }
+
+        public List<IntervalData> History { get; set; } = new List<IntervalData>();
     }
 
     public static class StatisticsEngine
@@ -19,22 +30,36 @@ namespace HabitTracker.Services
         {
             var stats = new HabitStats
             {
+                CurrentStreak = TimeSpan.Zero,
                 LongestStreak = TimeSpan.Zero,
                 AverageStreak = TimeSpan.Zero,
-                PredictedNextEvent = null,
-                AiSuggestion = "Nincs elég adat a statisztikához."
+                TotalEvents = logs.Count,
+                CheatDays = logs.Count(l => l.IsCheatDay),
+                AiSuggestion = "Nincs elég adat a részletes predikcióhoz."
             };
 
-            if (logs == null || logs.Count < 2)
+            var validLogs = logs.Where(l => !l.IsCheatDay).OrderBy(l => l.Timestamp).ToList();
+
+            if (validLogs.Count > 0)
+            {
+                stats.CurrentStreak = DateTime.Now - validLogs.Last().Timestamp;
+            }
+
+            if (validLogs.Count < 2)
                 return stats;
 
-            var sortedLogs = logs.OrderBy(l => l.Timestamp).ToList();
             var intervals = new List<double>();
-
-            for (int i = 1; i < sortedLogs.Count; i++)
+            for (int i = 1; i < validLogs.Count; i++)
             {
-                var diff = sortedLogs[i].Timestamp - sortedLogs[i - 1].Timestamp;
-                intervals.Add(diff.TotalHours);
+                double hours = (validLogs[i].Timestamp - validLogs[i - 1].Timestamp).TotalHours;
+                intervals.Add(hours);
+
+                
+                stats.History.Add(new IntervalData
+                {
+                    Hours = hours,
+                    EndDate = validLogs[i].Timestamp.ToString("MM.dd")
+                });
             }
 
             stats.LongestStreak = TimeSpan.FromHours(intervals.Max());
@@ -60,28 +85,18 @@ namespace HabitTracker.Services
                 {
                     double slope = ((n * sumXY) - (sumX * sumY)) / denominator;
                     double intercept = (sumY - slope * sumX) / n;
-
-                    double nextX = n + 1;
-                    double predictedHours = (slope * nextX) + intercept;
+                    double predictedHours = (slope * (n + 1)) + intercept;
 
                     if (predictedHours > 0)
                     {
-                        stats.PredictedNextEvent = sortedLogs.Last().Timestamp.AddHours(predictedHours);
+                        stats.PredictedNextEvent = validLogs.Last().Timestamp.AddHours(predictedHours);
 
                         if (slope > 0)
-                        {
-                            stats.AiSuggestion = "Javuló tendencia. Egyre több időt bírsz ki két esemény között.";
-                        }
+                            stats.AiSuggestion = "Javuló tendencia! Egyre több idő telik el két alkalom között.";
                         else
-                        {
-                            stats.AiSuggestion = "A statisztika alapján közeledik a holtpont. Tervezz be egy kontrollált Cheat Day-t vagy elterelést!";
-                        }
+                            stats.AiSuggestion = "A statisztika alapján az intervallumok rövidülnek. Fókuszálj a megelőzésre, vagy iktass be egy tervezett Cheat Day-t a feszültség levezetésére.";
                     }
                 }
-            }
-            else
-            {
-                stats.AiSuggestion = "A predikcióhoz legalább 3 regisztrált esemény szükséges.";
             }
 
             return stats;
