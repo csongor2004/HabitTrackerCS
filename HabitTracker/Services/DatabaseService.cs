@@ -27,6 +27,7 @@ namespace HabitTracker.Services
                         HabitId INTEGER,
                         Note TEXT,
                         Timestamp DATETIME,
+                        IsCheatDay INTEGER DEFAULT 0,
                         FOREIGN KEY(HabitId) REFERENCES Habits(Id)
                     );";
                 command.ExecuteNonQuery();
@@ -149,7 +150,7 @@ namespace HabitTracker.Services
                 command.ExecuteNonQuery();
             }
         }
-        public static void RecordEvent(int habitId, string note = "")
+        public static void RecordEvent(int habitId, string note = "", bool isCheatDay = false)
         {
             using (var connection = new SqliteConnection(DbPath))
             {
@@ -159,17 +160,21 @@ namespace HabitTracker.Services
                 {
                     var time = DateTime.Now;
 
-                    var updateCmd = connection.CreateCommand();
-                    updateCmd.CommandText = "UPDATE Habits SET LastOccurrence = $now WHERE Id = $id";
-                    updateCmd.Parameters.AddWithValue("$now", time);
-                    updateCmd.Parameters.AddWithValue("$id", habitId);
-                    updateCmd.ExecuteNonQuery();
+                    if (!isCheatDay)
+                    {
+                        var updateCmd = connection.CreateCommand();
+                        updateCmd.CommandText = "UPDATE Habits SET LastOccurrence = $now WHERE Id = $id";
+                        updateCmd.Parameters.AddWithValue("$now", time);
+                        updateCmd.Parameters.AddWithValue("$id", habitId);
+                        updateCmd.ExecuteNonQuery();
+                    }
 
                     var insertCmd = connection.CreateCommand();
-                    insertCmd.CommandText = "INSERT INTO Logs (HabitId, Note, Timestamp) VALUES ($habitId, $note, $now)";
+                    insertCmd.CommandText = "INSERT INTO Logs (HabitId, Note, Timestamp, IsCheatDay) VALUES ($habitId, $note, $now, $isCheat)";
                     insertCmd.Parameters.AddWithValue("$habitId", habitId);
                     insertCmd.Parameters.AddWithValue("$note", note);
                     insertCmd.Parameters.AddWithValue("$now", time);
+                    insertCmd.Parameters.AddWithValue("$isCheat", isCheatDay ? 1 : 0);
                     insertCmd.ExecuteNonQuery();
 
                     transaction.Commit();
@@ -182,10 +187,10 @@ namespace HabitTracker.Services
             }
         }
 
-        
 
-        
 
-        
+
+
+
     }
 }

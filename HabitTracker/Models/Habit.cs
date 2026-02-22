@@ -22,5 +22,6 @@ namespace HabitTracker.Models
         public int HabitId { get; set; }
         public string Note { get; set; }
         public DateTime Timestamp { get; set; }
+        public bool IsCheatDay { get; set; }
     }
 }

@@ -58,13 +58,7 @@ namespace HabitTracker.Views
             }
         }
 
-        private void AddLog_Click(object sender, RoutedEventArgs e)
-        {
-            string note = NewLogNoteTextBox.Text;
-            DatabaseService.RecordEvent(_currentHabit.Id, note);
-            NewLogNoteTextBox.Clear();
-            RefreshLogs();
-        }
+      
 
         private void DeleteLog_Click(object sender, RoutedEventArgs e)
         {
@@ -73,6 +67,21 @@ namespace HabitTracker.Views
                 DatabaseService.DeleteLog(selectedLog.Id);
                 RefreshLogs();
             }
+        }
+        private void AddLog_Click(object sender, RoutedEventArgs e)
+        {
+            string note = NewLogNoteTextBox.Text;
+            DatabaseService.RecordEvent(_currentHabit.Id, note, false);
+            NewLogNoteTextBox.Clear();
+            RefreshLogs();
+        }
+
+        private void AddCheatDay_Click(object sender, RoutedEventArgs e)
+        {
+            string note = string.IsNullOrWhiteSpace(NewLogNoteTextBox.Text) ? "Tervezett Cheat Day" : $"[CHEAT] {NewLogNoteTextBox.Text}";
+            DatabaseService.RecordEvent(_currentHabit.Id, note, true);
+            NewLogNoteTextBox.Clear();
+            RefreshLogs();
         }
     }
 }
