@@ -18,7 +18,10 @@
                 <ComboBoxItem Content="Jó szokás (Rászokás)"/>
             </ComboBox>
 
-            <Button Content="Módosítások mentése" Click="SaveHabit_Click" Height="35"/>
+            <Button Content="Módosítások mentése" Click="SaveHabit_Click" Height="35" Margin="0,0,0,20"/>
+
+            <TextBlock Text="Statisztika és Predikció" FontWeight="Bold" Margin="0,0,0,10"/>
+            <TextBlock x:Name="StatsTextBlock" TextWrapping="Wrap" Text="Adatok betöltése..."/>
         </StackPanel>
 
         <DockPanel Grid.Column="1">

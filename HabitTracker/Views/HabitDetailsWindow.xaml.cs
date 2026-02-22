@@ -24,7 +24,22 @@ namespace HabitTracker.Views
 
         private void RefreshLogs()
         {
-            LogsList.ItemsSource = DatabaseService.GetLogsForHabit(_currentHabit.Id);
+            var logs = DatabaseService.GetLogsForHabit(_currentHabit.Id);
+            LogsList.ItemsSource = logs;
+
+            var stats = StatisticsEngine.CalculateStats(logs);
+
+            string statsText = $"Leghosszabb idő:\n{stats.LongestStreak.Days} nap, {stats.LongestStreak.Hours} óra\n\n" +
+                               $"Átlagos idő:\n{stats.AverageStreak.Days} nap, {stats.AverageStreak.Hours} óra\n\n";
+
+            if (stats.PredictedNextEvent.HasValue)
+            {
+                statsText += $"Várható következő holtpont:\n{stats.PredictedNextEvent.Value:yyyy.MM.dd HH:mm}\n\n";
+            }
+
+            statsText += $"Tipp:\n{stats.AiSuggestion}";
+
+            StatsTextBlock.Text = statsText;
         }
 
         private void SaveHabit_Click(object sender, RoutedEventArgs e)
