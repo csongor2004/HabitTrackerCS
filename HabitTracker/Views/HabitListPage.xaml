@@ -1,0 +1,36 @@
+﻿<Page x:Class="HabitTracker.Views.HabitListPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Background="#EEE">
+            <Button Content="&lt; Vissza" Click="Back_Click" Width="80" Margin="10"/>
+            <TextBlock x:Name="PageTitleText" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <DockPanel Grid.Column="0" Margin="10">
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                    <Button Content="+" Click="Add_Click" Width="40" Margin="5"/>
+                    <Button Content="-" Click="Delete_Click" Width="40" Margin="5"/>
+                    <Button Content="Szerkesztés" Click="EditHabit_Click" Width="100" Margin="5"/>
+                </StackPanel>
+                <ListBox x:Name="HabitList" DisplayMemberPath="Name" SelectionChanged="HabitList_SelectionChanged" FontSize="16"/>
+            </DockPanel>
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock x:Name="StatusText" Text="Válassz szokást a listából!" FontSize="20" Margin="10" TextAlignment="Center"/>
+                <Button x:Name="ActionBtn" Content="ESEMÉNY RÖGZÍTÉSE" Click="Reset_Click" Width="250" Height="60" FontSize="16" Foreground="White" Margin="0,20,0,0"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

@@ -2,24 +2,30 @@
 using HabitTracker.Services;
 using System;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Threading;
 
 namespace HabitTracker.Views
 {
-    public partial class HabitListWindow : Window
+    public partial class HabitListPage : Page
     {
         private DispatcherTimer _timer;
         private HabitType _currentType;
 
-        public HabitListWindow(HabitType type)
+        public HabitListPage(HabitType type)
         {
             InitializeComponent();
             _currentType = type;
-            Title = type == HabitType.Bad ? "Rossz szokások" : "Jó szokások";
+            PageTitleText.Text = type == HabitType.Bad ? "Rossz szokások (Leszokás)" : "Jó szokások (Rászokás)";
             ActionBtn.Background = type == HabitType.Bad ? System.Windows.Media.Brushes.DarkRed : System.Windows.Media.Brushes.DarkGreen;
 
-            RefreshList();
+            this.Loaded += (s, e) => RefreshList();
             StartTimer();
+        }
+
+        private void Back_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationService.GoBack();
         }
 
         private void StartTimer()
@@ -30,24 +36,21 @@ namespace HabitTracker.Views
             _timer.Start();
         }
 
-        private void Timer_Tick(object sender, EventArgs e)
-        {
-            UpdateStatusText();
-        }
-
-        private void HabitList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            UpdateStatusText();
-        }
+        private void Timer_Tick(object sender, EventArgs e) => UpdateStatusText();
+        private void HabitList_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateStatusText();
 
         private void UpdateStatusText()
         {
             if (HabitList.SelectedItem is Habit selected)
             {
                 TimeSpan diff = DateTime.Now - selected.LastOccurrence;
-                StatusText.Text = $"{selected.Name}\n" +
-                                 $"{diff.Days} nap, {diff.Hours} óra, " +
-                                 $"{diff.Minutes} perc, {diff.Seconds} másodperc";
+                StatusText.Text = $"{selected.Name}\n\n" +
+                                 $"{diff.Days} nap, {diff.Hours} óra\n" +
+                                 $"{diff.Minutes} perc, {diff.Seconds} mp";
+            }
+            else
+            {
+                StatusText.Text = "Válassz szokást a listából!";
             }
         }
 
@@ -63,25 +66,24 @@ namespace HabitTracker.Views
                 }
             }
         }
+
         private void EditHabit_Click(object sender, RoutedEventArgs e)
         {
             if (HabitList.SelectedItem is Habit selected)
             {
-                var detailsWindow = new HabitDetailsWindow(selected) { Owner = this };
-                if (detailsWindow.ShowDialog() == true)
-                {
-                    RefreshList();
-                }
+                NavigationService.Navigate(new HabitDetailsPage(selected));
             }
         }
+
         private void RefreshList()
         {
             HabitList.ItemsSource = DatabaseService.GetHabits(_currentType);
+            UpdateStatusText();
         }
 
         private void Add_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new AddHabitWindow { Owner = this };
+            var dialog = new AddHabitWindow { Owner = Window.GetWindow(this) };
             if (dialog.ShowDialog() == true)
             {
                 DatabaseService.AddHabit(dialog.HabitName, _currentType);
@@ -97,6 +99,5 @@ namespace HabitTracker.Views
                 RefreshList();
             }
         }
-        
     }
 }

@@ -1,9 +1,6 @@
 ﻿<Window x:Class="HabitTracker.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Habit Tracker" Height="300" Width="400" WindowStartupLocation="CenterScreen">
-    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-        <Button Content="Rossz szokások (Leszokás)" Click="BadHabits_Click" Width="200" Height="50" Margin="10"/>
-        <Button Content="Jó szokások (Rászokás)" Click="GoodHabits_Click" Width="200" Height="50" Margin="10"/>
-    </StackPanel>
+        Title="Habit Tracker" Height="600" Width="800" WindowStartupLocation="CenterScreen">
+    <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
 </Window>

@@ -1,18 +1,25 @@
 ﻿using HabitTracker.Models;
 using HabitTracker.Services;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Navigation;
 
 namespace HabitTracker.Views
 {
-    public partial class HabitDetailsWindow : Window
+    public partial class HabitDetailsPage : Page
     {
         private Habit _currentHabit;
 
-        public HabitDetailsWindow(Habit habit)
+        public HabitDetailsPage(Habit habit)
         {
             InitializeComponent();
             _currentHabit = habit;
-            LoadHabitData();
+            this.Loaded += (s, e) => LoadHabitData();
+        }
+
+        private void Back_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationService.GoBack();
         }
 
         private void LoadHabitData()
@@ -28,7 +35,6 @@ namespace HabitTracker.Views
             LogsList.ItemsSource = logs;
 
             var stats = StatisticsEngine.CalculateStats(logs);
-
             string statsText = $"Leghosszabb idő:\n{stats.LongestStreak.Days} nap, {stats.LongestStreak.Hours} óra\n\n" +
                                $"Átlagos idő:\n{stats.AverageStreak.Days} nap, {stats.AverageStreak.Hours} óra\n\n";
 
@@ -36,9 +42,7 @@ namespace HabitTracker.Views
             {
                 statsText += $"Várható következő holtpont:\n{stats.PredictedNextEvent.Value:yyyy.MM.dd HH:mm}\n\n";
             }
-
             statsText += $"Tipp:\n{stats.AiSuggestion}";
-
             StatsTextBlock.Text = statsText;
         }
 
@@ -48,7 +52,9 @@ namespace HabitTracker.Views
             {
                 var selectedType = TypeComboBox.SelectedIndex == 0 ? HabitType.Bad : HabitType.Good;
                 DatabaseService.UpdateHabit(_currentHabit.Id, NameTextBox.Text, selectedType);
-                DialogResult = true;
+                _currentHabit.Name = NameTextBox.Text;
+                _currentHabit.Type = selectedType;
+                MessageBox.Show("Módosítások sikeresen mentve.", "Mentés", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
