@@ -18,10 +18,11 @@
         <Grid Grid.Row="1" Margin="20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="6*"/>
+                <ColumnDefinition Width="20"/>
                 <ColumnDefinition Width="4*"/>
             </Grid.ColumnDefinitions>
 
-            <Grid Grid.Column="0" Margin="0,0,15,0">
+            <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -33,8 +34,8 @@
                     </Border.Effect>
                     <StackPanel>
                         <TextBlock Text="Szokás átnevezése" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
-                        <TextBox x:Name="NameTextBox" Margin="0,0,0,20" FontSize="16" Height="35" VerticalContentAlignment="Center"/>
-                        <Button Content="Módosítások mentése" Click="SaveHabit_Click" Height="40" Width="200" HorizontalAlignment="Center"/>
+                        <TextBox x:Name="NameTextBox" Margin="0,0,0,15" FontSize="16" Height="35" VerticalContentAlignment="Center"/>
+                        <Button Content="Módosítások mentése" Click="SaveHabit_Click" Height="40" Width="200" HorizontalAlignment="Center" Background="#2196F3" Foreground="White"/>
                     </StackPanel>
                 </Border>
 
@@ -49,39 +50,65 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Text="Részletes Statisztika" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+                        <TextBlock Grid.Row="0" Text="Részletes Statisztika és Eredmények" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
 
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,15">
-                            <TextBlock x:Name="StatsTextBlock" TextWrapping="Wrap" FontSize="15" LineHeight="24"/>
+                            <StackPanel>
+                                <TextBlock x:Name="StatsTextBlock" TextWrapping="Wrap" FontSize="15" LineHeight="24"/>
+
+                                <ItemsControl x:Name="BadgesList" Margin="0,15,0,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="#FFF8E1" BorderBrush="#FFC107" BorderThickness="1" CornerRadius="6" Padding="10,5" Margin="0,0,0,8">
+                                                <TextBlock Text="{Binding}" FontWeight="Bold" FontSize="15" Foreground="#F57F17"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
                         </ScrollViewer>
 
-                        <Button Grid.Row="2" Content="Vizsgálat és Diagramok" Click="OpenAnalysis_Click" Height="45" Background="#43A047" Foreground="White" FontWeight="Bold" FontSize="15"/>
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Content="Diagramok" Click="OpenAnalysis_Click" Height="45" Background="#43A047" Foreground="White" FontWeight="Bold" FontSize="15"/>
+                            <Button Grid.Column="2" Content="Adatok Exportálása" Click="Export_Click" Height="45" Background="#1E88E5" Foreground="White" FontWeight="Bold" FontSize="15"/>
+                        </Grid>
                     </Grid>
                 </Border>
             </Grid>
 
-            <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="20">
+            <Border Grid.Column="2" Background="White" CornerRadius="8" Padding="20">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="10" ShadowDepth="2" Color="#DDDDDD" Opacity="0.5"/>
                 </Border.Effect>
-                <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="Eseménynapló" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                    <Grid DockPanel.Dock="Top" Margin="0,0,0,15">
+                    <TextBlock Grid.Row="0" Text="Eseménynapló" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                    <Grid Grid.Row="1" Margin="0,0,0,15">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-
                         <TextBox x:Name="NewLogNoteTextBox" Grid.Column="0" Margin="0,0,10,0" VerticalContentAlignment="Center" FontSize="14"/>
                         <Button Grid.Column="1" Content="Új alkalom" Click="AddLog_Click" Padding="15,0" Height="35" Background="#E53935" Margin="0,0,10,0" Foreground="White"/>
                         <Button Grid.Column="2" Content="Cheat Day" Click="AddCheatDay_Click" Padding="15,0" Height="35" Background="#FFB300" Foreground="Black"/>
                     </Grid>
 
-                    <Button DockPanel.Dock="Bottom" Content="Kiválasztott bejegyzés törlése" Click="DeleteLog_Click" Height="35" Margin="0,15,0,0" Background="#757575"/>
+                    <Button Grid.Row="2" Content="Kiválasztott bejegyzés törlése" Click="DeleteLog_Click" Height="35" Margin="0,0,0,15" Background="#757575" Foreground="White"/>
 
-                    <ListBox x:Name="LogsList" FontSize="15" BorderThickness="1" BorderBrush="#EEEEEE" HorizontalContentAlignment="Stretch">
+                    <ListBox Grid.Row="3" x:Name="LogsList" FontSize="15" BorderThickness="1" BorderBrush="#EEEEEE" HorizontalContentAlignment="Stretch">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" Margin="5">
@@ -91,7 +118,7 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
-                </DockPanel>
+                </Grid>
             </Border>
         </Grid>
     </Grid>

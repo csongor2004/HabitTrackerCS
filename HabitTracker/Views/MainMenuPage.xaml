@@ -4,9 +4,20 @@
       Title="Főmenü">
     <Grid Background="#FAFAFA">
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="Habit Tracker" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,30"/>
-            <Button Content="Rossz szokások (Leszokás)" Click="BadHabits_Click" Width="300" Height="60" Margin="10" Background="#E53935" Foreground="White" FontSize="18"/>
-            <Button Content="Jó szokások (Rászokás)" Click="GoodHabits_Click" Width="300" Height="60" Margin="10" Background="#43A047" Foreground="White" FontSize="18"/>
+            <TextBlock Text="Habit Tracker" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+            <Border Background="White" CornerRadius="8" Padding="20" Margin="0,0,0,30" Width="450" Visibility="Collapsed" x:Name="AiDashboardPanel">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="10" ShadowDepth="2" Color="#DDDDDD" Opacity="0.5"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="🤖 Napi AI Összegzés" FontSize="18" FontWeight="Bold" Foreground="#1976D2" Margin="0,0,0,10"/>
+                    <TextBlock x:Name="AiSummaryText" TextWrapping="Wrap" FontSize="15" LineHeight="24"/>
+                </StackPanel>
+            </Border>
+
+            <Button Content="Rossz szokások (Leszokás)" Click="BadHabits_Click" Width="300" Height="60" Margin="10" Background="#E53935" Foreground="White" FontSize="18" FontWeight="SemiBold"/>
+            <Button Content="Jó szokások (Rászokás)" Click="GoodHabits_Click" Width="300" Height="60" Margin="10" Background="#43A047" Foreground="White" FontSize="18" FontWeight="SemiBold"/>
         </StackPanel>
     </Grid>
 </Page>

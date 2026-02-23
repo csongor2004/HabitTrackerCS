@@ -46,21 +46,63 @@ namespace HabitTracker.Views
             var logs = DatabaseService.GetLogsForHabit(_currentHabit.Id);
             LogsList.ItemsSource = logs;
 
-            var stats = StatisticsEngine.CalculateStats(logs);
-
-            string statsText = $"Jelenlegi tiszta idő:\n{stats.CurrentStreak.Days} nap, {stats.CurrentStreak.Hours} óra\n\n" +
-                               $"Leghosszabb tiszta idő:\n{stats.LongestStreak.Days} nap, {stats.LongestStreak.Hours} óra\n\n" +
-                               $"Átlagos idő két alkalom között:\n{stats.AverageStreak.Days} nap, {stats.AverageStreak.Hours} óra\n\n" +
-                               $"Összes regisztrált alkalom: {stats.TotalEvents}\n" +
-                               $"Felhasznált Cheat Day-ek: {stats.CheatDays}\n\n";
-
-            if (stats.PredictedNextEvent.HasValue)
+            if (_currentHabit.Type == HabitType.Bad)
             {
-                statsText += $"Várható következő statisztikai holtpont:\n{stats.PredictedNextEvent.Value:yyyy.MM.dd HH:mm}\n\n";
-            }
+                var stats = StatisticsEngine.CalculateStats(logs);
+                string statsText = $"Jelenlegi tiszta idő:\n{stats.CurrentStreak.Days} nap, {stats.CurrentStreak.Hours} óra\n\n" +
+                                   $"Leghosszabb tiszta idő:\n{stats.LongestStreak.Days} nap, {stats.LongestStreak.Hours} óra\n\n" +
+                                   $"Összes regisztrált alkalom: {stats.TotalEvents}\n" +
+                                   $"Felhasznált Cheat Day-ek: {stats.CheatDays}\n\n";
 
-            statsText += $"AI Elemzés:\n{stats.AiSuggestion}";
-            StatsTextBlock.Text = statsText;
+                if (stats.PredictedNextEvent.HasValue) statsText += $"Várható következő statisztikai holtpont:\n{stats.PredictedNextEvent.Value:yyyy.MM.dd HH:mm}\n\n";
+                statsText += $"AI Elemzés:\n{stats.AiSuggestion}";
+                StatsTextBlock.Text = statsText;
+
+                // Kitűzők betöltése
+                BadgesList.ItemsSource = stats.EarnedBadges;
+            }
+            else
+            {
+                var stats = StatisticsEngine.CalculateGoodHabitStats(logs);
+                string statsText = $"Jelenlegi napi sorozat:\n{stats.CurrentDailyStreak} nap\n\n" +
+                                   $"Leghosszabb napi sorozat:\n{stats.LongestDailyStreak} nap\n\n" +
+                                   $"Összes sikeres teljesítés:\n{stats.TotalCompletions} alkalom\n\n" +
+                                   $"Felhasznált Pihenőnapok: {stats.CheatDays}\n\n" +
+                                   $"AI Elemzés:\n{stats.AiSuggestion}";
+                StatsTextBlock.Text = statsText;
+
+                
+                BadgesList.ItemsSource = stats.EarnedBadges;
+            }
+        }
+
+        
+        private void Export_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Microsoft.Win32.SaveFileDialog();
+            dialog.FileName = $"{_currentHabit.Name}_Adatok";
+            dialog.DefaultExt = ".csv";
+            dialog.Filter = "Excel CSV fájlok (.csv)|*.csv";
+
+            if (dialog.ShowDialog() == true)
+            {
+                var logs = DatabaseService.GetLogsForHabit(_currentHabit.Id);
+                var sb = new System.Text.StringBuilder();
+
+                
+                sb.AppendLine("Datum;Idopont;Tipus;Megjegyzes");
+
+                foreach (var log in logs.OrderBy(l => l.Timestamp))
+                {
+                    string type = log.IsCheatDay ? "Cheat Day" : "Normal";
+                    
+                    sb.AppendLine($"{log.Timestamp:yyyy.MM.dd};{log.Timestamp:HH:mm};{type};{log.Note}");
+                }
+
+                
+                System.IO.File.WriteAllText(dialog.FileName, sb.ToString(), System.Text.Encoding.UTF8);
+                MessageBox.Show("Az adatok sikeresen exportálva lettek CSV formátumba!", "Sikeres Export", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
 
         private void SaveHabit_Click(object sender, RoutedEventArgs e)
