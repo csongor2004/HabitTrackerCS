@@ -26,7 +26,8 @@ namespace HabitTracker.Services
         public int LongestDailyStreak { get; set; }
         public int TotalCompletions { get; set; }
 
-        // ÚJ: Gamifikáció - Elért kitűzők listája
+        public string MostFrequentDay { get; set; }
+        public string MostFrequentTimeOfDay { get; set; }
         public List<string> EarnedBadges { get; set; } = new List<string>();
     }
 
@@ -75,10 +76,44 @@ namespace HabitTracker.Services
             if (stats.CurrentStreak.Days >= 7) stats.EarnedBadges.Add("🥈 1 Hete Tiszta!");
             if (stats.CurrentStreak.Days >= 30) stats.EarnedBadges.Add("🥇 1 Hónapja Tiszta!");
             if (stats.LongestStreak.Days >= 14 && stats.CurrentStreak.Days < 14) stats.EarnedBadges.Add("🛡️ Volt már 2 hetes sorozatod, meg tudod csinálni újra!");
-
+            AnalyzeBehaviorPatterns(stats, validLogs);
             return stats;
         }
+        public static void AnalyzeBehaviorPatterns(HabitStats stats, List<HabitLog> validLogs)
+        {
+            if (validLogs.Count == 0)
+            {
+                stats.MostFrequentDay = "Nincs adat";
+                stats.MostFrequentTimeOfDay = "Nincs adat";
+                return;
+            }
 
+            string[] huDays = { "Vasárnap", "Hétfő", "Kedd", "Szerda", "Csütörtök", "Péntek", "Szombat" };
+
+            // Leggyakoribb nap kiszámítása
+            var topDay = validLogs.GroupBy(l => l.Timestamp.DayOfWeek)
+                                  .OrderByDescending(g => g.Count())
+                                  .FirstOrDefault();
+
+            if (topDay != null)
+            {
+                stats.MostFrequentDay = $"{huDays[(int)topDay.Key]} ({topDay.Count()} alkalom)";
+            }
+
+            // Leggyakoribb napszak kiszámítása
+            var topHour = validLogs.GroupBy(l => l.Timestamp.Hour)
+                                   .OrderByDescending(g => g.Count())
+                                   .FirstOrDefault();
+
+            if (topHour != null)
+            {
+                int h = topHour.Key;
+                if (h >= 5 && h < 12) stats.MostFrequentTimeOfDay = $"Délelőtt ({topHour.Count()} alkalom)";
+                else if (h >= 12 && h < 18) stats.MostFrequentTimeOfDay = $"Délután ({topHour.Count()} alkalom)";
+                else if (h >= 18 && h < 23) stats.MostFrequentTimeOfDay = $"Este ({topHour.Count()} alkalom)";
+                else stats.MostFrequentTimeOfDay = $"Éjszaka ({topHour.Count()} alkalom)";
+            }
+        }
         public static HabitStats CalculateGoodHabitStats(List<HabitLog> logs)
         {
             var stats = new HabitStats { TotalCompletions = logs.Count(l => !l.IsCheatDay), CheatDays = logs.Count(l => l.IsCheatDay), AiSuggestion = "Kezdd el rögzíteni a sikeres napokat!" };
@@ -122,7 +157,8 @@ namespace HabitTracker.Services
             if (stats.CurrentDailyStreak >= 7) stats.EarnedBadges.Add("⚡ 1 Hetes Villám!");
             if (stats.TotalCompletions >= 10) stats.EarnedBadges.Add("🎯 10 Teljesítés!");
             if (stats.TotalCompletions >= 50) stats.EarnedBadges.Add("🏆 50 Teljesítés Mestere!");
-
+            var nonCheatLogs = logs.Where(l => !l.IsCheatDay).ToList();
+            AnalyzeBehaviorPatterns(stats, nonCheatLogs);
             return stats;
         }
     }

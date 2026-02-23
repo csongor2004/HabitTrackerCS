@@ -96,7 +96,8 @@ namespace HabitTracker.Views
                 analysis += $"Gyakoriság: Az elmúlt időszakban átlagosan {stats.AverageStreak.Days} naponta és {stats.AverageStreak.Hours} óránként történt esemény.\n\n";
                 analysis += stats.AiSuggestion;
             }
-
+            FreqDayText.Text = stats.MostFrequentDay;
+            FreqTimeText.Text = stats.MostFrequentTimeOfDay;
             DeepAnalysisText.Text = analysis;
         }
     }
