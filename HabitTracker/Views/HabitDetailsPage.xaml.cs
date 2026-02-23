@@ -5,7 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
-
+using MessageBox = System.Windows.MessageBox;
 namespace HabitTracker.Views
 {
     public partial class HabitDetailsPage : Page

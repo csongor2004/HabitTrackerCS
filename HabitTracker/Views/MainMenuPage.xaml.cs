@@ -76,5 +76,9 @@ namespace HabitTracker.Views
         {
             NavigationService.Navigate(new HabitListPage(HabitType.Good));
         }
+        private void Settings_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationService.Navigate(new SettingsPage());
+        }
     }
 }
