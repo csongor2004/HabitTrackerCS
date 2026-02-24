@@ -47,13 +47,13 @@ namespace HabitTracker
         private void SetupNotificationEngine()
         {
             _notificationTimer = new DispatcherTimer();
-            // TESZT: 60 perc helyett 5 másodpercre állítjuk!
-            _notificationTimer.Interval = TimeSpan.FromSeconds(5);
+            
+            _notificationTimer.Interval = TimeSpan.FromMinutes(60);
             _notificationTimer.Tick += CheckNotifications;
             _notificationTimer.Start();
 
-            // TESZT AZONNALI ÜZENET: Ha ezt látod, a rendszer jól működik!
-            _notifyIcon.ShowBalloonTip(3000, "Habit Tracker", "Az értesítési rendszer tökéletesen működik!", System.Windows.Forms.ToolTipIcon.Info);
+            
+            
         }
 
         private void CheckNotifications(object sender, EventArgs e)

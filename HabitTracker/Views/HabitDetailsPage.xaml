@@ -10,8 +10,12 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" Background="{DynamicResource CardBg}">
-            <Button Content="&lt; Vissza" Click="Back_Click" Width="80" Margin="15,0" Background="Transparent" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Foreground="{DynamicResource PrimaryText}"/>            <TextBlock Text="Kiválasztott szokás:" FontSize="18" VerticalAlignment="Center" Margin="10,0"/>
-            <ComboBox x:Name="HabitSelector" Width="220" Height="35" FontSize="16" DisplayMemberPath="Name" SelectionChanged="HabitSelector_SelectionChanged" VerticalContentAlignment="Center"/>
+            <Button Content="&lt; Vissza" Click="Back_Click" Width="80" Margin="15,0" Background="Transparent" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" Foreground="{DynamicResource PrimaryText}"/>
+            <TextBlock Text="Kiválasztott szokás:" FontSize="18" VerticalAlignment="Center" Margin="10,0"/>
+            <ComboBox x:Name="HabitSelector" Width="220" Height="35" FontSize="16"
+                      DisplayMemberPath="Name"
+                      SelectionChanged="HabitSelector_SelectionChanged"
+                      VerticalContentAlignment="Center"/>
         </StackPanel>
 
         <Grid Grid.Row="1" Margin="20">
@@ -54,7 +58,9 @@
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,15">
                             <StackPanel>
                                 <TextBlock x:Name="StatsTextBlock" TextWrapping="Wrap" FontSize="15" LineHeight="24"/>
-
+                                <TextBlock x:Name="GoalTitleText" Text="Következő Cél (Haladás):" FontWeight="Bold" Margin="0,15,0,5" Foreground="#1976D2"/>
+                                <ProgressBar x:Name="GoalProgressBar" Height="15" Margin="0,0,0,5" Foreground="#4CAF50" Background="{DynamicResource BorderColor}" BorderThickness="0"/>
+                                <TextBlock x:Name="GoalProgressText" Text="0 / 3 nap a kitűzőig" FontSize="13" Foreground="{DynamicResource SecondaryText}" TextAlignment="Right"/>
                                 <ItemsControl x:Name="BadgesList" Margin="0,15,0,0">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
@@ -102,11 +108,13 @@
                         </Grid.ColumnDefinitions>
                         <TextBox x:Name="NewLogNoteTextBox" Grid.Column="0" Margin="0,0,10,0" VerticalContentAlignment="Center" FontSize="14"/>
                         <Button Grid.Column="1" Content="Új alkalom" Click="AddLog_Click" Padding="15,0" Height="35" Background="#E53935" Margin="0,0,10,0" Foreground="White"/>
-                        <Button Grid.Column="2" Content="Cheat Day" Click="AddCheatDay_Click" Padding="15,0" Height="35" Background="#FFB300" Foreground="Black"/>                    </Grid>
+                        <Button Grid.Column="2" Content="Cheat Day" Click="AddCheatDay_Click" Padding="15,0" Height="35" Background="#FFB300" Foreground="Black"/>
+                    </Grid>
 
                     <Button Grid.Row="2" Content="Kiválasztott bejegyzés törlése" Click="DeleteLog_Click" Height="35" Margin="0,0,0,15" Background="#757575" Foreground="White"/>
 
-                    <ListBox Grid.Row="3" x:Name="LogsList" FontSize="15" BorderThickness="1" BorderBrush="{DynamicResource BorderColor}" Background="Transparent" HorizontalContentAlignment="Stretch">                        <ListBox.ItemTemplate>
+                    <ListBox Grid.Row="3" x:Name="LogsList" FontSize="15" BorderThickness="1" BorderBrush="{DynamicResource BorderColor}" Background="Transparent" HorizontalContentAlignment="Stretch">
+                        <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" Margin="5">
                                     <TextBlock Text="{Binding Timestamp, StringFormat=\{0:yyyy.MM.dd HH:mm\}}" FontWeight="Bold" Margin="0,0,15,0"/>

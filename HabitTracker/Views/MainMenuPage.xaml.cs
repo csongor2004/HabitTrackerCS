@@ -62,7 +62,17 @@ namespace HabitTracker.Views
             {
                 summary = "✅ Minden rendben van! A mai jó szokásaidat már teljesítetted, és egyetlen rossz szokásnál sincs statisztikai holtpont a láthatáron.";
             }
-
+            if (AppSettings.ShowMotivation)
+            {
+                string[] quotes = {
+                    "\"A motiváció elindít, a megszokás mozgásban tart.\"",
+                    "\"Minden nagy utazás egy kis lépéssel kezdődik.\"",
+                    "\"Ne a tökéletességre törekedj, hanem a folyamatos fejlődésre!\"",
+                    "\"A mai nehézség a holnapi erő.\""
+                };
+                string randomQuote = quotes[new Random().Next(quotes.Length)];
+                summary += $"\n\n💡 Napi tipp: {randomQuote}";
+            }
             AiSummaryText.Text = summary.Trim();
             AiDashboardPanel.Visibility = Visibility.Visible;
         }

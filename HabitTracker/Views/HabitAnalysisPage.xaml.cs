@@ -1,5 +1,6 @@
 ﻿using HabitTracker.Models;
 using HabitTracker.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -36,41 +37,59 @@ namespace HabitTracker.Views
         private void LoadAnalysis()
         {
             var logs = DatabaseService.GetLogsForHabit(_habit.Id);
-            var stats = StatisticsEngine.CalculateStats(logs);
 
-            GenerateChart(stats);
-            GenerateDeepAnalysis(stats);
+            if (_habit.Type == HabitType.Bad)
+            {
+                
+                ChartTitleText.Text = "Két alkalom között eltelt idő (Trend)";
+                var stats = StatisticsEngine.CalculateStats(logs);
+
+                GenerateChart(stats);
+                GenerateDeepAnalysis(stats);
+
+                FreqDayText.Text = stats.MostFrequentDay;
+                FreqTimeText.Text = stats.MostFrequentTimeOfDay;
+            }
+            else
+            {
+                
+                ChartTitleText.Text = "Teljesítések az elmúlt 10 napban";
+                var stats = StatisticsEngine.CalculateGoodHabitStats(logs);
+
+                GenerateGoodHabitChart(logs);
+                GenerateGoodHabitDeepAnalysis(stats);
+
+                FreqDayText.Text = stats.MostFrequentDay;
+                FreqTimeText.Text = stats.MostFrequentTimeOfDay;
+            }
         }
 
+        // --- ROSSZ SZOKÁS METÓDUSOK ---
         private void GenerateChart(HabitStats stats)
         {
-            if (stats.History.Count == 0)
-                return;
+            if (stats.History.Count == 0) return;
 
             double maxHours = stats.History.Max(h => h.Hours);
-            double maxPixelHeight = 300.0; // Az oszlopok maximális magassága
+            double maxPixelHeight = 300.0;
 
             var chartData = new List<ChartBar>();
             foreach (var item in stats.History)
             {
                 double height = maxHours > 0 ? (item.Hours / maxHours) * maxPixelHeight : 0;
-
                 chartData.Add(new ChartBar
                 {
-                    PixelHeight = height < 5 ? 5 : height, // Minimum 5 pixel, hogy látszódjon
+                    PixelHeight = height < 5 ? 5 : height,
                     DisplayHours = $"{item.Hours:F1}ó",
                     EndDate = item.EndDate,
                     ToolTipText = $"{item.Hours:F1} órát bírtál ki ekkorra: {item.EndDate}"
                 });
             }
-
             ChartControl.ItemsSource = chartData;
         }
 
         private void GenerateDeepAnalysis(HabitStats stats)
         {
             string analysis = "";
-
             if (stats.History.Count < 3)
             {
                 analysis = "Még nincs elegendő adat egy megbízható trend felállításához. Rögzíts még legalább pár alkalmat!";
@@ -80,24 +99,45 @@ namespace HabitTracker.Views
                 var firstHalf = stats.History.Take(stats.History.Count / 2).Average(h => h.Hours);
                 var secondHalf = stats.History.Skip(stats.History.Count / 2).Average(h => h.Hours);
 
-                if (secondHalf > firstHalf * 1.2)
-                {
-                    analysis += "Kiváló teljesítmény! A legutóbbi időszakban átlagosan több mint 20%-kal tovább bírtad, mint a korábbiakban. A trend egyértelműen felfelé ível.\n\n";
-                }
-                else if (secondHalf < firstHalf * 0.8)
-                {
-                    analysis += "Figyelem! A legutóbbi időszakban a visszaesések közötti idő lerövidült. Érdemes lehet felülvizsgálni a jelenlegi stratégiát vagy beiktatni egy Cheat Day-t.\n\n";
-                }
-                else
-                {
-                    analysis += "Stagnálás figyelhető meg. Kiegyensúlyozott a teljesítményed, de az áttöréshez egy új stratégiára lehet szükség a kiváltó okok elkerülésére.\n\n";
-                }
+                if (secondHalf > firstHalf * 1.2) analysis += "Kiváló teljesítmény! A legutóbbi időszakban átlagosan több mint 20%-kal tovább bírtad, mint a korábbiakban. A trend egyértelműen felfelé ível.\n\n";
+                else if (secondHalf < firstHalf * 0.8) analysis += "Figyelem! A legutóbbi időszakban a visszaesések közötti idő lerövidült. Érdemes lehet felülvizsgálni a jelenlegi stratégiát vagy beiktatni egy Cheat Day-t.\n\n";
+                else analysis += "Stagnálás figyelhető meg. Kiegyensúlyozott a teljesítményed, de az áttöréshez egy új stratégiára lehet szükség a kiváltó okok elkerülésére.\n\n";
 
                 analysis += $"Gyakoriság: Az elmúlt időszakban átlagosan {stats.AverageStreak.Days} naponta és {stats.AverageStreak.Hours} óránként történt esemény.\n\n";
                 analysis += stats.AiSuggestion;
             }
-            FreqDayText.Text = stats.MostFrequentDay;
-            FreqTimeText.Text = stats.MostFrequentTimeOfDay;
+            DeepAnalysisText.Text = analysis;
+        }
+
+        // --- JÓ SZOKÁS METÓDUSOK ---
+        private void GenerateGoodHabitChart(List<HabitLog> logs)
+        {
+            var chartData = new List<ChartBar>();
+           
+            var last10Days = Enumerable.Range(0, 10).Select(i => DateTime.Today.AddDays(-9 + i)).ToList();
+
+            foreach (var date in last10Days)
+            {
+                int count = logs.Count(l => l.Timestamp.Date == date && !l.IsCheatDay);
+                chartData.Add(new ChartBar
+                {
+                    PixelHeight = count > 0 ? 150 : 5, 
+                    DisplayHours = count > 0 ? "✓" : "-", 
+                    EndDate = date.ToString("MM.dd"),
+                    ToolTipText = count > 0 ? "Sikeresen teljesítve" : "Ezen a napon kimaradt"
+                });
+            }
+            ChartControl.ItemsSource = chartData;
+        }
+
+        private void GenerateGoodHabitDeepAnalysis(HabitStats stats)
+        {
+            string analysis = "";
+            analysis += $" Aktuális napi sorozat: {stats.CurrentDailyStreak} nap.\n";
+            analysis += $" Leghosszabb sorozat: {stats.LongestDailyStreak} nap.\n";
+            analysis += $" Összes sikeres teljesítés: {stats.TotalCompletions} alkalom.\n\n";
+            analysis += $"AI Értékelés és Tipp:\n{stats.AiSuggestion}";
+
             DeepAnalysisText.Text = analysis;
         }
     }

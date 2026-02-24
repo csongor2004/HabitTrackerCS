@@ -58,7 +58,24 @@ namespace HabitTracker.Views
                 statsText += $"AI Elemzés:\n{stats.AiSuggestion}";
                 StatsTextBlock.Text = statsText;
 
-                // Kitűzők betöltése
+                
+                int currentProgress = _currentHabit.Type == HabitType.Bad ? stats.CurrentStreak.Days : stats.CurrentDailyStreak;
+                int target = 3;
+
+                if (currentProgress >= 3) target = 7;
+                if (currentProgress >= 7) target = 14;
+                if (currentProgress >= 14) target = 30;
+                if (currentProgress >= 30) target = 90;
+
+                GoalProgressBar.Maximum = target;
+                GoalProgressBar.Value = currentProgress;
+                GoalProgressText.Text = $"{currentProgress} / {target} nap a következő mérföldkőig";
+
+                if (currentProgress >= 90)
+                {
+                    GoalProgressBar.Value = GoalProgressBar.Maximum;
+                    GoalProgressText.Text = "Elérted a maximum célt! Fantasztikus!";
+                }
                 BadgesList.ItemsSource = stats.EarnedBadges;
             }
             else
@@ -72,6 +89,23 @@ namespace HabitTracker.Views
                 StatsTextBlock.Text = statsText;
 
                 
+                int currentProgress = _currentHabit.Type == HabitType.Bad ? stats.CurrentStreak.Days : stats.CurrentDailyStreak;
+                int target = 3;
+
+                if (currentProgress >= 3) target = 7;
+                if (currentProgress >= 7) target = 14;
+                if (currentProgress >= 14) target = 30;
+                if (currentProgress >= 30) target = 90;
+
+                GoalProgressBar.Maximum = target;
+                GoalProgressBar.Value = currentProgress;
+                GoalProgressText.Text = $"{currentProgress} / {target} nap a következő mérföldkőig";
+
+                if (currentProgress >= 90)
+                {
+                    GoalProgressBar.Value = GoalProgressBar.Maximum;
+                    GoalProgressText.Text = "Elérted a maximum célt! Fantasztikus!";
+                }
                 BadgesList.ItemsSource = stats.EarnedBadges;
             }
         }
@@ -145,7 +179,7 @@ namespace HabitTracker.Views
         {
             if (LogsList.SelectedItem is HabitLog selectedLog)
             {
-                // Átadjuk a szokás ID-ját is a visszatekeréshez
+                
                 DatabaseService.DeleteLog(selectedLog.Id, _currentHabit.Id);
 
                 
