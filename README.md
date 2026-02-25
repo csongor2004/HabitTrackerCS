@@ -32,7 +32,7 @@ Egy modern, funkciókban gazdag asztali alkalmazás (WPF), amely segít a jó sz
 
 ##  Telepítés és használat
 
-1. Klónozd a repository-t: `git clone https://github.com/FELHASZNALONEV/HabitTrackerCS.git`
+1. Klónozd a repository-t: `git clone https://github.com/csongor2004/HabitTrackerCS.git`
 2. Nyisd meg a `.sln` fájlt Visual Studio 2022-ben.
 3. Győződj meg róla, hogy a NuGet csomagok (pl. `Microsoft.Data.Sqlite`) telepítve vannak.
 4. Futtasd a projektet (F5).
